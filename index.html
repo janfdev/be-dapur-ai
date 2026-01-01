@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dapur AI - Generate Resep</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #ff6b6b;
+        --secondary: #4ecdc4;
+        --dark: #2d3436;
+        --light: #f7f9fc;
+        --glass: rgba(255, 255, 255, 0.95);
+        --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Outfit", sans-serif;
+      }
+
+      body {
+        background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        color: var(--dark);
+      }
+
+      .container {
+        width: 100%;
+        max-width: 1000px;
+        background: var(--glass);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        padding: 40px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+      }
+
+      h1 {
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 10px;
+      }
+      p {
+        color: #636e72;
+        margin-bottom: 20px;
+        line-height: 1.6;
+      }
+
+      .form-section {
+        padding-right: 20px;
+        border-right: 1px solid #dfe6e9;
+      }
+      .preview-section {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #eabfbf;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+      }
+
+      input:focus,
+      select:focus,
+      textarea:focus {
+        border-color: var(--primary);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2);
+      }
+
+      .preference-box {
+        background: #f1f2f6;
+        padding: 20px;
+        border-radius: 12px;
+        margin-top: 20px;
+      }
+
+      .preference-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        cursor: pointer;
+      }
+
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+      }
+
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 34px;
+      }
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+      input:checked + .slider {
+        background-color: var(--primary);
+      }
+      input:checked + .slider:before {
+        transform: translateX(26px);
+      }
+
+      button {
+        width: 100%;
+        padding: 15px;
+        background: var(--dark);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        margin-top: 20px;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        background: var(--primary);
+      }
+
+      .result-box {
+        flex-grow: 1;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #dfe6e9;
+        padding: 20px;
+        white-space: pre-wrap;
+        font-family: monospace;
+        overflow-y: auto;
+        max-height: 500px;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          grid-template-columns: 1fr;
+        }
+        .form-section {
+          border-right: none;
+          padding-right: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="form-section">
+        <h1>Dapur AI</h1>
+        <p>
+          Masukan bahan yang kamu punya, dan biarkan AI meracik resep sempurna
+          untukmu.
+        </p>
+
+        <!-- Auth Token Simulation -->
+        <div class="form-group">
+          <label>Token (Simulasi Login)</label>
+          <input
+            type="text"
+            id="token"
+            placeholder="Paste Bearer Token from Login here..."
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Bahan-bahan (pisahkan dengan koma)</label>
+          <input
+            type="text"
+            id="ingredients"
+            placeholder="Contoh: Ayam, Bawang Putih, Kecap"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Kategori Masakan</label>
+          <select id="category">
+            <option value="Makanan Berat">Makanan Berat</option>
+            <option value="Makanan Sehat">Makanan Sehat</option>
+            <option value="Makanan Bayi">Makanan Bayi</option>
+          </select>
+          <small
+            style="
+              color: #666;
+              font-size: 0.8rem;
+              margin-top: 5px;
+              display: block;
+            "
+          >
+            *Pilih "Makanan Bayi" untuk tekstur lunak & nutrisi tumbuh kembang.
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label>Adjustment (Opsional)</label>
+          <textarea
+            id="adjustment"
+            rows="2"
+            placeholder="Contoh: Saya sedang flu, ingin yang hangat/berkuah..."
+          ></textarea>
+          <small style="color: #888"
+            >Permintaan khusus untuk resep saat ini saja.</small
+          >
+        </div>
+
+        <!-- Preferences Section -->
+        <div class="preference-box">
+          <div class="preference-header" onclick="togglePreferences()">
+            <label style="margin: 0; cursor: pointer"
+              >Override Preferences?</label
+            >
+            <label class="toggle-switch">
+              <input type="checkbox" id="overridePref" />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div id="prefContent" class="hidden">
+            <p style="font-size: 0.85rem; margin-bottom: 15px">
+              Jika tidak diisi, sistem akan menggunakan preferensi dari Database
+              (Profile User). Gunakan ini HANYA jika ingin mengubah preferensi
+              untuk satu kali request ini.
+            </p>
+            <div class="form-group">
+              <label>Batas Kalori (kkal)</label>
+              <input
+                type="number"
+                id="calorieLimit"
+                placeholder="Contoh: 500"
+              />
+            </div>
+            <div class="form-group">
+              <label>Tingkat Pedas (1-10)</label>
+              <input
+                type="range"
+                id="spicyLevel"
+                min="0"
+                max="10"
+                value="0"
+                oninput="this.nextElementSibling.value = this.value"
+              />
+              <output>0</output>
+            </div>
+            <div class="form-group">
+              <label>Hindari Makanan</label>
+              <input
+                type="text"
+                id="avoidFoods"
+                placeholder="Contoh: Kacang, Udang"
+              />
+            </div>
+          </div>
+        </div>
+
+        <button onclick="generateRecipe()">Generate Resep ✨</button>
+      </div>
+
+      <div class="preview-section">
+        <h2>Hasil Resep</h2>
+        <p>Resep racikan AI akan muncul di bawah ini.</p>
+        <div id="output" class="result-box">Menunggu request...</div>
+      </div>
+    </div>
+
+    <script>
+      function togglePreferences() {
+        const checkbox = document.getElementById("overridePref");
+        const content = document.getElementById("prefContent");
+        if (checkbox.checked) {
+          content.classList.remove("hidden");
+        } else {
+          content.classList.add("hidden");
+        }
+      }
+
+      // Attach listener to checkbox directly for clearer UI behavior logic
+      document
+        .getElementById("overridePref")
+        .addEventListener("change", togglePreferences);
+
+      async function generateRecipe() {
+        const token = document.getElementById("token").value;
+        const ingredients = document
+          .getElementById("ingredients")
+          .value.split(",")
+          .map((i) => i.trim());
+        const category = document.getElementById("category").value;
+        const adjustment = document.getElementById("adjustment").value;
+        const outputBox = document.getElementById("output");
+
+        if (!token) {
+          alert("Mohon isi Token terlebih dahulu (Ambil dari response login)");
+          return;
+        }
+
+        // Build Payload
+        const payload = {
+          ingredients,
+          category,
+          adjustment, // "Adjustment" biasa (req.body.adjustment)
+        };
+
+        // Jika user mencentang override, kita kirim object preferences
+        if (document.getElementById("overridePref").checked) {
+          payload.preferences = {
+            calorieLimit:
+              document.getElementById("calorieLimit").value || undefined,
+            spicyLevel:
+              document.getElementById("spicyLevel").value || undefined,
+            avoidFoods:
+              document.getElementById("avoidFoods").value || undefined,
+          };
+        }
+
+        outputBox.innerText = "Sedang meracik resep...";
+
+        try {
+          const res = await fetch("http://localhost:3000/api/recipe/generate", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await res.json();
+
+          if (data.success) {
+            outputBox.innerText = data.data; // Markdown/Text response from AI
+          } else {
+            outputBox.innerText = "Error: " + (data.message || "Unknown error");
+          }
+        } catch (err) {
+          outputBox.innerText = "Network Error: " + err.message;
+        }
+      }
+    </script>
+  </body>
+</html>
