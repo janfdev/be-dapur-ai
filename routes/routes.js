@@ -144,6 +144,77 @@ router.get("/profile", verifyToken, userController.getProfileUser);
 
 /**
  * @swagger
+ * /profile/preferences:
+ *   get:
+ *     summary: Get user preferences (diet settings)
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User preferences data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     userId:
+ *                       type: integer
+ *                     calorieLimit:
+ *                       type: integer
+ *                       description: Maximum calories per recipe
+ *                     spicyLevel:
+ *                       type: integer
+ *                       description: Spicy level preference (0-10)
+ *                     avoidFoods:
+ *                       type: string
+ *                       description: Foods to avoid (allergies/restrictions)
+ *   post:
+ *     summary: Update user preferences (diet settings)
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               calorieLimit:
+ *                 type: integer
+ *                 description: Maximum calories per recipe
+ *                 example: 500
+ *               spicyLevel:
+ *                 type: integer
+ *                 description: Spicy level preference (0-10)
+ *                 example: 5
+ *               avoidFoods:
+ *                 type: string
+ *                 description: Foods to avoid (comma separated)
+ *                 example: "Kacang, Udang, Santan"
+ *     responses:
+ *       200:
+ *         description: Preferences updated successfully
+ */
+// get preferences
+router.get("/profile/preferences", verifyToken, userController.getPreferences);
+// update preferences
+router.post(
+  "/profile/preferences",
+  verifyToken,
+  userController.updatePreferences
+);
+
+/**
+ * @swagger
  * /recipe/generate:
  *   post:
  *     summary: Generate a recipe using AI
@@ -181,5 +252,45 @@ router.get("/profile", verifyToken, userController.getProfileUser);
  */
 // Generate Recipe
 router.post("/recipe/generate", verifyToken, promptController.generateRecipe);
+
+// Reviews
+const reviewController = require("../controllers/ReviewController");
+/**
+ * @swagger
+ * /reviews:
+ *   get:
+ *     summary: Get recent reviews
+ *     tags: [Review]
+ *     responses:
+ *       200:
+ *         description: List of reviews
+ *   post:
+ *     summary: Create a review
+ *     tags: [Review]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - rating
+ *               - message
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               rating:
+ *                 type: integer
+ *               message:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Review created
+ */
+router.get("/reviews", reviewController.getReviews);
+router.post("/reviews", reviewController.createReview);
 
 module.exports = router;

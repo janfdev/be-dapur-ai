@@ -50,6 +50,54 @@ const getProfileUser = async (req, res) => {
   }
 };
 
+// UPDATE PREFERENCES
+const updatePreferences = async (req, res) => {
+  const userId = req.user.id;
+  // Parse inputs to correct types
+  let { calorieLimit, spicyLevel, avoidFoods } = req.body;
+
+  // Ensure numeric types
+  if (calorieLimit) calorieLimit = parseInt(calorieLimit);
+  if (spicyLevel) spicyLevel = parseInt(spicyLevel);
+
+  try {
+    const preferences = await prisma.userPreference.upsert({
+      where: { userId: Number(userId) },
+      update: { calorieLimit, spicyLevel, avoidFoods },
+      create: { userId: Number(userId), calorieLimit, spicyLevel, avoidFoods },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Preferences updated",
+      data: preferences,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update preferences",
+      error: err.message,
+    });
+  }
+};
+
+// GET PREFERENCES
+const getPreferences = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const preferences = await prisma.userPreference.findUnique({
+      where: { userId: Number(userId) },
+    });
+    return res.status(200).json({
+      success: true,
+      data: preferences || {},
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+};
+
 // FORGOT PASSWORD (DIRECT RESET)
 const forgotPassword = async (req, res) => {
   const errors = validationResult(req);
@@ -103,4 +151,9 @@ const forgotPassword = async (req, res) => {
     });
   }
 };
-module.exports = { getProfileUser, forgotPassword };
+module.exports = {
+  getProfileUser,
+  forgotPassword,
+  updatePreferences,
+  getPreferences,
+};

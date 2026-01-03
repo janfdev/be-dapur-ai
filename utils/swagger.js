@@ -11,10 +11,6 @@ const options = {
     },
     servers: [
       {
-        url: "http://localhost:3000/api",
-        description: "Local Development Server",
-      },
-      {
         url: "https://be-dapur-ai.vercel.app/api",
         description: "Production Server",
       },

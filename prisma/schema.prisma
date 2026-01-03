@@ -54,3 +54,14 @@ model RecipeHistory {
 
   @@map("recipe_history")
 }
+
+model Review {
+  id Int @id @default(autoincrement())
+  name String
+  email String?
+  rating Int
+  message String
+  createdAt DateTime @default(now())
+
+  @@map("reviews")
+}
